@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/dev/Dockerfile
+    env_file:
+      - .envs/development.env
+    volumes:
+      - .:/code:delegated
+    ports:
+      - "8000:8000"
