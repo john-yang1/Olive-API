@@ -1,2 +1,8 @@
 # Core
 Django==3.2.1
+
+# Downloading
+requests==2.25.1
+
+# AWS
+boto3==1.17.65
