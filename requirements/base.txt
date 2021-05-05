@@ -1,5 +1,6 @@
 # Core
 Django==3.2.1
+djangorestframework==3.12.4
 
 # Downloading
 requests==2.25.1
