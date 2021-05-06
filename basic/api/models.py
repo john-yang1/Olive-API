@@ -58,8 +58,6 @@ class Website(models.Model):
             s3.Object(
                 s3_bucket_name, f"{'__'.join(self.url.split('/')[2:])}.html").put(Body=r.text)
             print(f"Saved {self.url} to S3..")
-
-            print(yes)
         except Exception as e:
             print(e)
 
