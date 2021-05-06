@@ -8,6 +8,7 @@ class WebsiteAdmin(admin.ModelAdmin):
         'id',
         'name',
         'url',
+        'keywords',
     )
     fieldsets = (
         ('Basic Information', {
@@ -15,6 +16,7 @@ class WebsiteAdmin(admin.ModelAdmin):
                 'id',
                 'name',
                 'url',
+                'keywords',
             ),
         }),
     )

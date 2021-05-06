@@ -34,6 +34,11 @@ class Website(models.Model):
         max_length=255,
         blank=True
     )
+    keywords = models.JSONField(
+        null=True,
+        blank=True
+    )
+
 
     # Instance methods
     def clean(self):
@@ -56,6 +61,7 @@ class Website(models.Model):
     def scrape(self):
         print('Scraping {}'.format(self.name))
         try:
+            website_json = {}
             s3 = self.create_s3_connection()
             r = requests.get(self.url, verify=True)
             s3.Object(
@@ -74,7 +80,10 @@ class Website(models.Model):
                 # raw_string = r"^{}$".format(keyword)
                 # print(soup.find_all(text=re.compile(raw_string)))
                 matches = soup.find_all(text=re.compile(keyword, re.IGNORECASE))
-                print(f"KEYWORD: {keyword}, COUNT: {len(matches)} ")
+                website_json[keyword] = len(matches)
+
+            print(website_json)
+            return website_json
 
             # ATTACK JSON TO FIELD IN WEBSITE
 
@@ -83,7 +92,8 @@ class Website(models.Model):
 
     def save(self, **kwargs):
         self.clean()
-        self.scrape()
+        self.keywords = self.scrape()
+        print(self.keywords)
 
         super().save(**kwargs)
 
