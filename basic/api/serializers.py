@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Website
+from .models import Website, Keyword
 
 
 class CreateWebsiteSerializer(serializers.ModelSerializer):
@@ -22,6 +22,39 @@ class CreateWebsiteSerializer(serializers.ModelSerializer):
             'name',
             'url',
         ]
+
+
+class CreateKeywordSerializer(serializers.ModelSerializer):
+    """Create Keyword serializer."""
+
+    def validate(self, attrs):
+        name = attrs.get('name', None)
+
+        if name == 'ATB':
+            raise serializers.ValidationError({
+                'name': 'Name cannot be ATB',
+            })
+
+        return attrs
+
+    class Meta:
+        model = Keyword
+        fields = [
+            'name',
+            'url',
+        ]
+
+
+class KeywordSerializer(serializers.ModelSerializer):
+    """Base Keyword serializer."""
+
+    class Meta:
+        model = Keyword
+        fields = [
+            'id',
+            'name',
+        ]
+        read_only_fields = ['id']
 
 
 class WebsiteSerializer(serializers.ModelSerializer):
