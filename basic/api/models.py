@@ -1,7 +1,17 @@
+from django.core.exceptions import ValidationError
+from django.db import models
 import uuid
 
-from django.db import models
-from django.core.exceptions import ValidationError
+import os
+
+import requests
+import boto3
+
+s3_bucket_name = os.getenv('DJANGO_AWS_S3_BUCKET')
+access_key_id = os.getenv('DJANG0_AWS_ACCESS_KEY')
+secret_access_key = os.getenv('DJANG0_AWS_SECRET_ACCESS_KEY')
+region = os.getenv('DJANGO_AWS_REGION')
+aws_app = "s3"
 
 
 class Website(models.Model):
@@ -30,9 +40,28 @@ class Website(models.Model):
                 'name': 'Name cannot be ATB',
             })
 
-    def scrape(self):
+    def create_s3_connection(self):
+        try:
+            s3 = boto3.resource(aws_app, region_name=region,
+                                aws_access_key_id=access_key_id,
+                                aws_secret_access_key=secret_access_key)
+            print("Connected to S3..")
+            return s3
+        except Exception as e:
+            print("Exception occurred while trying to connect to the AWS S3 bucket: " + e)
 
+    def scrape(self):
         print('Scraping {}'.format(self.name))
+        try:
+            s3 = self.create_s3_connection()
+            r = requests.get(self.url, verify=True)
+            s3.Object(
+                s3_bucket_name, f"{'__'.join(self.url.split('/')[2:])}.html").put(Body=r.text)
+            print(f"Saved {self.url} to S3..")
+
+            print(yes)
+        except Exception as e:
+            print(e)
 
     def save(self, **kwargs):
         self.clean()

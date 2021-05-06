@@ -18,7 +18,8 @@ def process_urls_from_input():
         s3 = create_s3_connection()
         threads = []
         for url in urls:
-            x = threading.Thread(target=write_url_contents_to_firebase, args=(url, s3))
+            x = threading.Thread(
+                target=write_url_contents_to_firebase, args=(url, s3))
             x.start()
             threads.append(x)
         for thread in threads:
@@ -30,7 +31,7 @@ def process_urls_from_input():
 
 def get_url_list_from_input_file():
     try:
-        with open("input.txt") as f:
+        with open("scripts/input.txt") as f:
             urls = f.readlines()
         f.close()
         urls = [url.strip() for url in urls]
@@ -54,7 +55,8 @@ def create_s3_connection():
 def write_url_contents_to_firebase(url, s3):
     try:
         r = requests.get(url, verify=False)
-        s3.Object(s3_bucket_name, f"{'__'.join(url.split('/')[2:])}.html").put(Body=r.text)
+        s3.Object(s3_bucket_name,
+                  f"{'__'.join(url.split('/')[2:])}.html").put(Body=r.text)
         print(f"Saved {url} to S3..")
     except Exception as e:
         print("Exception occurred while writing to firebase: " + e)
