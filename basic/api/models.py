@@ -1,3 +1,5 @@
+import re
+
 from django.core.exceptions import ValidationError
 from django.db import models
 import uuid
@@ -6,6 +8,7 @@ import os
 
 import requests
 import boto3
+from bs4 import BeautifulSoup
 
 s3_bucket_name = os.getenv('DJANGO_AWS_S3_BUCKET')
 access_key_id = os.getenv('DJANG0_AWS_ACCESS_KEY')
@@ -58,6 +61,23 @@ class Website(models.Model):
             s3.Object(
                 s3_bucket_name, f"{'__'.join(self.url.split('/')[2:])}.html").put(Body=r.text)
             print(f"Saved {self.url} to S3..")
+
+            # CHECK HTML FOR EACH OF THE KEYWORDS AND SAVE AS JSON
+            soup = BeautifulSoup(r.text, 'html.parser')
+
+            # GET ALL KEYWORDS
+            all_keywords = [k.name for k in Keyword.objects.all()]
+
+            # print(soup.prettify())
+
+            for keyword in all_keywords:
+                # raw_string = r"^{}$".format(keyword)
+                # print(soup.find_all(text=re.compile(raw_string)))
+                matches = soup.find_all(text=re.compile(keyword, re.IGNORECASE))
+                print(f"KEYWORD: {keyword}, COUNT: {len(matches)} ")
+
+            # ATTACK JSON TO FIELD IN WEBSITE
+
         except Exception as e:
             print(e)
 

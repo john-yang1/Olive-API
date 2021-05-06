@@ -7,3 +7,6 @@ requests==2.25.1
 
 # AWS
 boto3==1.17.65
+
+# beautifulsoup4
+beautifulsoup4==4.9.3
