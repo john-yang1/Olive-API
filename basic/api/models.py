@@ -9,6 +9,7 @@ import os
 import requests
 import boto3
 from bs4 import BeautifulSoup
+import re
 
 s3_bucket_name = os.getenv('DJANGO_AWS_S3_BUCKET')
 access_key_id = os.getenv('DJANG0_AWS_ACCESS_KEY')
@@ -28,7 +29,7 @@ class Website(models.Model):
     )
     name = models.CharField(
         max_length=255,
-        unique=True
+        unique=True,
     )
     url = models.URLField(
         max_length=255,
@@ -38,7 +39,6 @@ class Website(models.Model):
         null=True,
         blank=True
     )
-
 
     # Instance methods
     def clean(self):
@@ -59,7 +59,13 @@ class Website(models.Model):
             print("Exception occurred while trying to connect to the AWS S3 bucket: " + e)
 
     def scrape(self):
-        print('Scraping {}'.format(self.name))
+        # EXTRACTS NAME FROM URL
+        stripped_url = re.findall(
+            r'(?<=\.)([^.]+)(?:\.(?:co\.uk|co\.in|co\.nz|co\.ke|co\.za|ac\.us|[^.]+(?:$|\n)))',
+            self.url)
+        company_name = stripped_url[0]
+
+        print('Scraping {}'.format(company_name))
         try:
             website_json = {}
             s3 = self.create_s3_connection()
@@ -83,7 +89,7 @@ class Website(models.Model):
                 website_json[keyword] = len(matches)
 
             print(website_json)
-            return website_json
+            return [website_json, company_name]
 
             # ATTACK JSON TO FIELD IN WEBSITE
 
@@ -92,8 +98,12 @@ class Website(models.Model):
 
     def save(self, **kwargs):
         self.clean()
-        self.keywords = self.scrape()
+        website_keywords = self.scrape()[0]
+        self.keywords = website_keywords
         print(self.keywords)
+        website_name = self.scrape()[1]
+        self.name = website_name
+        print(f"extracted company name: {self.name}")
 
         super().save(**kwargs)
 

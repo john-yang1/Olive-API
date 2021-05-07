@@ -14,7 +14,7 @@ class WebsiteAdmin(admin.ModelAdmin):
         ('Basic Information', {
             'fields': (
                 'id',
-                'name',
+                # 'name',
                 'url',
                 'keywords',
             ),
