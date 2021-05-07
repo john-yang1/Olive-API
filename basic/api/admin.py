@@ -16,7 +16,7 @@ class WebsiteAdmin(admin.ModelAdmin):
                 'id',
                 # 'name',
                 'url',
-                'keywords',
+                # 'keywords',
             ),
         }),
     )
