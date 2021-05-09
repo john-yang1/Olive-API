@@ -18,6 +18,21 @@ region = os.getenv('DJANGO_AWS_REGION')
 aws_app = "s3"
 
 
+def get_all_keywords():
+    return [k.name for k in Keyword.objects.all()]
+
+
+def create_s3_connection():
+    try:
+        s3 = boto3.resource(aws_app, region_name=region,
+                            aws_access_key_id=access_key_id,
+                            aws_secret_access_key=secret_access_key)
+        print("Connected to S3..")
+        return s3
+    except Exception as e:
+        print("Exception occurred while trying to connect to the AWS S3 bucket: " + e)
+
+
 class Website(models.Model):
     """Website keyword."""
 
@@ -40,74 +55,45 @@ class Website(models.Model):
         blank=True
     )
 
-    # Instance methods
-    def clean(self):
-        """Validate requirement-stakeholders project reference match."""
-        if self.name == 'ATB':
-            raise ValidationError({
-                'name': 'Name cannot be ATB',
-            })
-
-    def create_s3_connection(self):
+    def get_company_name_from_url(self):
         try:
-            s3 = boto3.resource(aws_app, region_name=region,
-                                aws_access_key_id=access_key_id,
-                                aws_secret_access_key=secret_access_key)
-            print("Connected to S3..")
-            return s3
-        except Exception as e:
-            print("Exception occurred while trying to connect to the AWS S3 bucket: " + e)
-
-    def scrape(self):
-        # EXTRACTS NAME FROM URL
-        stripped_url = re.findall(
-            r'(?<=\.)([^.]+)(?:\.(?:co\.uk|co\.in|co\.nz|co\.ke|co\.za|ac\.us|[^.]+(?:$|\n)))',
-            self.url)
-        company_name = stripped_url[0]
-
-        print('Scraping {}'.format(company_name))
-        try:
-            website_json = {}
-            s3 = self.create_s3_connection()
-            r = requests.get(self.url, verify=True)
-            s3.Object(
-                s3_bucket_name, f"{'__'.join(self.url.split('/')[2:])}.html").put(Body=r.text)
-            print(f"Saved {self.url} to S3..")
-
-            # CHECK HTML FOR EACH OF THE KEYWORDS AND SAVE AS JSON
-            soup = BeautifulSoup(r.text, 'html.parser')
-
-            # GET ALL KEYWORDS
-            all_keywords = [k.name for k in Keyword.objects.all()]
-
-            # print(soup.prettify())
-
-            for keyword in all_keywords:
-                # raw_string = r"^{}$".format(keyword)
-                # print(soup.find_all(text=re.compile(raw_string)))
-                matches = soup.find_all(text=re.compile(keyword, re.IGNORECASE))
-                website_json[keyword] = len(matches)
-
-            print(website_json)
-            return [website_json, company_name]
-
-            # ATTACK JSON TO FIELD IN WEBSITE
-
+            stripped_url = re.findall(
+                r'(?<=\.)([^.]+)(?:\.(?:co\.uk|co\.in|co\.nz|co\.ke|co\.za|ac\.us|[^.]+(?:$|\n)))',
+                self.url)
+            company_name = stripped_url[0]
+            print('Company name: {}'.format(company_name))
+            return company_name
         except Exception as e:
             print(e)
 
+    def get_website_keyword_frequency_json(self):
+        try:
+            keyword_frequency_count_for_site = {}
+            raw_html = self.save_url_to_s3_and_return_html()
+            parsing_html = BeautifulSoup(raw_html, 'html.parser')
+            all_keywords = get_all_keywords()
+            for keyword in all_keywords:
+                all_matches = parsing_html.find_all(text=re.compile(keyword, re.IGNORECASE))
+                keyword_frequency_count_for_site[keyword] = len(all_matches)
+            return keyword_frequency_count_for_site
+        except Exception as e:
+            print(e)
+
+    def save_url_to_s3_and_return_html(self):
+        s3 = create_s3_connection()
+        r = requests.get(self.url, verify=True)
+        s3.Object(s3_bucket_name, f"{'__'.join(self.url.split('/')[2:])}.html").put(Body=r.text)
+        print(f"Saved {self.url} to S3..")
+        return r.text
+
     def save(self, **kwargs):
-        self.clean()
-        website_keywords = self.scrape()[0]
-        self.keywords = website_keywords
-        print(self.keywords)
-        website_name = self.scrape()[1]
+        website_name = self.get_company_name_from_url()
+        keyword_frequency_count_json = self.get_website_keyword_frequency_json()
+        self.keywords = keyword_frequency_count_json
         self.name = website_name
         print(f"extracted company name: {self.name}")
-
         super().save(**kwargs)
 
-    # Magic
     def __str__(self):
         return '{}'.format(self.name)
 
@@ -129,19 +115,14 @@ class Keyword(models.Model):
         unique=True
     )
 
-    # Instance methods
-    def clean(self):
-        """Validate requirement-stakeholders project reference match."""
-        if self.name == 'ATB':
-            raise ValidationError({
-                'name': 'Name cannot be ATB',
-            })
+    def update_existing_websites(self):
+        print('Updating existing websites with newly added keywords..')
+        # Retrieve all website html pages from S3
 
     def scrape(self):
         print('Scraping {}'.format(self.name))
 
     def save(self, **kwargs):
-        self.clean()
         self.scrape()
 
         super().save(**kwargs)
