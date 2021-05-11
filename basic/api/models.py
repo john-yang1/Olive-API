@@ -74,6 +74,8 @@ class Website(models.Model):
             all_keywords = get_all_keywords()
             for keyword in all_keywords:
                 all_matches = parsing_html.find_all(text=re.compile(keyword, re.IGNORECASE))
+                for match in all_matches:
+                    print(f"keyword: {keyword}, word found: {match}")
                 keyword_frequency_count_for_site[keyword] = len(all_matches)
             return keyword_frequency_count_for_site
         except Exception as e:
