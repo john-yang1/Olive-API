@@ -44,11 +44,12 @@ class Website(models.Model):
     )
     name = models.CharField(
         max_length=255,
-        unique=True,
+        unique=True
     )
     url = models.URLField(
         max_length=255,
-        blank=True
+        blank=True,
+        unique=True
     )
     keywords = models.JSONField(
         null=True,
