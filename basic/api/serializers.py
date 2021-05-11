@@ -66,5 +66,7 @@ class WebsiteSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'url',
+            'keywords',
+            'storage_url',
         ]
         read_only_fields = ['id']

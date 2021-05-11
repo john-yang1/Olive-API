@@ -3,7 +3,6 @@ import re
 from django.core.exceptions import ValidationError
 from django.db import models
 import uuid
-
 import os
 
 import requests
@@ -33,6 +32,27 @@ def create_s3_connection():
         print("Exception occurred while trying to connect to the AWS S3 bucket: " + e)
 
 
+def create_s3_client():
+    try:
+        s3_client = boto3.client(aws_app, region_name=region,
+                                 aws_access_key_id=access_key_id,
+                                 aws_secret_access_key=secret_access_key)
+        print("Created S3 Client")
+        return s3_client
+    except Exception as e:
+        print("Exception occurred trying to create s3 client connection: " + e)
+
+
+def create_presigned_url(object_name, expiration=31540000):  # Default expiration time to 1 year
+    s3 = create_s3_client()
+    try:
+        response = s3.generate_presigned_url('get_object', Params={'Bucket': os.getenv('DJANGO_AWS_S3_BUCKET'),
+                                                                   'Key': object_name}, ExpiresIn=expiration)
+        return response
+    except Exception as e:
+        print("Exception occurred creating presigned url" + e)
+
+
 class Website(models.Model):
     """Website keyword."""
 
@@ -55,6 +75,10 @@ class Website(models.Model):
         null=True,
         blank=True
     )
+    storage_url = models.URLField(
+        max_length=255,
+        blank=True
+    )  # Url link to s3 object, can call requests.get(self.storage_url) to get file(html data)
 
     def get_company_name_from_url(self):
         try:
@@ -82,6 +106,16 @@ class Website(models.Model):
         except Exception as e:
             print(e)
 
+    def get_website_storage_url(self):
+        try:
+            print("Generating storage url")
+            s3_object = f"{'__'.join(self.url.split('/')[2:])}.html"
+            url = create_presigned_url(s3_object)
+            print("Created presigned url: " + url)
+            return url
+        except Exception as e:
+            print(e)
+
     def save_url_to_s3_and_return_html(self):
         s3 = create_s3_connection()
         r = requests.get(self.url, verify=True)
@@ -90,11 +124,14 @@ class Website(models.Model):
         return r.text
 
     def save(self, **kwargs):
+        storage_location_url = self.get_website_storage_url()
         website_name = self.get_company_name_from_url()
         keyword_frequency_count_json = self.get_website_keyword_frequency_json()
         self.keywords = keyword_frequency_count_json
         self.name = website_name
+        self.storage_url = storage_location_url
         print(f"extracted company name: {self.name}")
+        print(f"storage url: {self.storage_url}")
         super().save(**kwargs)
 
     def __str__(self):
