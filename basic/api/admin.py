@@ -1,9 +1,16 @@
 from django.contrib import admin
+from import_export import resources
+from import_export.admin import ImportExportModelAdmin
 
 from .models import Website, Keyword
 
+class WebsiteResource(resources.ModelResource):
+    class Meta:
+        model = Website
+        fields = ('name', 'url',)
 
-class WebsiteAdmin(admin.ModelAdmin):
+
+class WebsiteAdmin(ImportExportModelAdmin):
     list_display = (
         'id',
         'name',
@@ -25,6 +32,8 @@ class WebsiteAdmin(admin.ModelAdmin):
     ]
     search_fields = ['name']
 
+    resource_class = WebsiteResource
+
 
 class KeywordAdmin(admin.ModelAdmin):
     list_display = (
@@ -43,6 +52,7 @@ class KeywordAdmin(admin.ModelAdmin):
         'id',
     ]
     search_fields = ['name']
+
 
 admin.site.register(Website, WebsiteAdmin)
 admin.site.register(Keyword, KeywordAdmin)

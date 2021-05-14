@@ -64,7 +64,7 @@ class Website(models.Model):
     )
     name = models.CharField(
         max_length=255,
-        unique=True
+        blank=True,
     )
     url = models.URLField(
         max_length=255,
