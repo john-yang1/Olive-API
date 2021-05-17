@@ -16,3 +16,9 @@ psycopg2==2.8.6
 
 #Import-Export
 django-import-export==2.5.0
+
+#elasticsearchdsl
+elasticsearch-dsl>=2.0.0
+django-elasticsearch-dsl>=7.1.4
+django-elasticsearch-dsl-drf>=0.17.6
+

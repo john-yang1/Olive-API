@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.conf',
+    'django_elasticsearch_dsl',
     'import_export',
     'rest_framework',
     'basic.api',
@@ -136,3 +137,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AWS_ACCESS_KEY = os.getenv('DJANG0_AWS_ACCESS_KEY')
 AWS_SECRET_ACCESS_KEY = os.getenv('DJANG0_AWS_SECRET_ACCESS_KEY')
+
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': os.getenv("ELASTICSEARCH_DSL_HOSTS", 'localhost:9200')
+    },
+}
