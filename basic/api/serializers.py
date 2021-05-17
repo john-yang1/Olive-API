@@ -70,3 +70,35 @@ class WebsiteSerializer(serializers.ModelSerializer):
             'storage_url',
         ]
         read_only_fields = ['id']
+
+class CreatePotatoeSerializer(serializers.ModelSerializer):
+    """Create Keyword serializer."""
+
+    def validate(self, attrs):
+        name = attrs.get('name', None)
+
+        if name == 'ATB':
+            raise serializers.ValidationError({
+                'name': 'Name cannot be ATB',
+            })
+
+        return attrs
+        
+    class Meta:
+        model = Keyword
+        fields = [
+            'name',
+            'url',
+        ]
+
+
+class PotatoeSerializer(serializers.ModelSerializer):
+    """Base Keyword serializer."""
+
+    class Meta:
+        model = Keyword
+        fields = [
+            'id',
+            'name',
+        ]
+        read_only_fields = ['id']

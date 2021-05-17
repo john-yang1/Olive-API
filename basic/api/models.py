@@ -173,3 +173,38 @@ class Keyword(models.Model):
 
     class Meta:
         ordering = ['name']
+
+
+class Potatoe(models.Model):
+    """Potatoe."""
+
+    # Fields
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+    name = models.CharField(
+        max_length=255,
+        unique=True
+    )
+
+    def update_existing_websites(self):
+        print('Updating existing websites with newly added keywords..')
+        # Retrieve all website html pages from S3
+
+    def scrape(self):
+        print('Scraping {}'.format(self.name))
+
+    def save(self, **kwargs):
+        self.scrape()
+
+        super().save(**kwargs)
+
+    # Magic
+    def __str__(self):
+        return '{}'.format(self.name)
+
+    class Meta:
+        ordering = ['name']
+
