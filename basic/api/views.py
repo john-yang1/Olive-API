@@ -1,4 +1,6 @@
-from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
 
 from .models import Website, Keyword
 from .serializers import (
@@ -7,6 +9,7 @@ from .serializers import (
     KeywordSerializer,
     CreateKeywordSerializer,
 )
+from .utils import search
 
 
 class WebsiteViewSet(viewsets.ModelViewSet):
@@ -27,6 +30,23 @@ class WebsiteViewSet(viewsets.ModelViewSet):
             serializer = WebsiteSerializer
 
         return serializer
+
+    @action(methods=['get'],
+            detail=False,
+            url_path='search',
+            suffix='Search')
+    def search(self, request):
+
+        query = request.query_params.get('search', None)
+
+        if not query:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        queryset = search(query)
+
+        serializer = WebsiteSerializer(queryset, many=True)
+
+        return Response(serializer.data)
 
 
 class KeywordViewSet(viewsets.ModelViewSet):

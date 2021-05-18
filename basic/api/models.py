@@ -91,11 +91,10 @@ class Website(models.Model):
         except Exception as e:
             print(e)
 
-    def get_website_keyword_frequency_json(self):
+    def get_website_keyword_frequency_json(self, html):
         try:
             keyword_frequency_count_for_site = {}
-            raw_html = self.save_url_to_s3_and_return_html()
-            parsing_html = BeautifulSoup(raw_html, 'html.parser')
+            parsing_html = BeautifulSoup(html, 'html.parser')
             all_keywords = get_all_keywords()
             for keyword in all_keywords:
                 all_matches = parsing_html.find_all(text=re.compile(keyword, re.IGNORECASE))
@@ -124,15 +123,25 @@ class Website(models.Model):
         return r.text
 
     def save(self, **kwargs):
+
+        raw_html = self.save_url_to_s3_and_return_html()
         storage_location_url = self.get_website_storage_url()
         website_name = self.get_company_name_from_url()
-        keyword_frequency_count_json = self.get_website_keyword_frequency_json()
+        keyword_frequency_count_json = self.get_website_keyword_frequency_json(raw_html)
+
         self.keywords = keyword_frequency_count_json
         self.name = website_name
         self.storage_url = storage_location_url
+
         print(f"extracted company name: {self.name}")
         print(f"storage url: {self.storage_url}")
+
         super().save(**kwargs)
+
+        # update ES record with raw HTML
+        # TODO
+
+
 
     def __str__(self):
         return '{}'.format(self.name)

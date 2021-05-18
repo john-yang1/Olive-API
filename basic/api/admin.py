@@ -21,9 +21,10 @@ class WebsiteAdmin(ImportExportModelAdmin):
         ('Basic Information', {
             'fields': (
                 'id',
-                # 'name',
+                'name',
+                'storage_url',
                 'url',
-                # 'keywords',
+                'keywords',
             ),
         }),
     )
