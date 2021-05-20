@@ -12,7 +12,7 @@ def search(string):
     """
     search = WebsiteDocument.search()
 
-    q = Q("multi_match", query=string, fields=['name', 'url', 'storage_url'])
+    q = Q("multi_match", query=string, fields=['content', 'name', 'url', 'storage_url'])
 
     search = search.query(q)
 

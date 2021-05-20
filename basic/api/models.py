@@ -80,6 +80,13 @@ class Website(models.Model):
         blank=True
     )  # Url link to s3 object, can call requests.get(self.storage_url) to get file(html data)
 
+    def get_content_from_storage(self):
+        """
+        Gets content (html text) from storage url and returns it. Used by WebsiteDocument to get stored as content field
+        """
+        r = requests.get(self.storage_url, verify=True)
+        return r.text
+
     def get_company_name_from_url(self):
         try:
             stripped_url = re.findall(
