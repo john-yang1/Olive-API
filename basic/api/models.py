@@ -76,7 +76,7 @@ class Website(models.Model):
         blank=True
     )
     storage_url = models.URLField(
-        max_length=255,
+        max_length=500,
         blank=True
     )  # Url link to s3 object, can call requests.get(self.storage_url) to get file(html data)
 
