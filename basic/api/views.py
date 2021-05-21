@@ -10,7 +10,8 @@ from .serializers import (
     CreateKeywordSerializer,
 )
 from .utils import search
-
+from django.http import HttpResponse
+from django.http.response import JsonResponse
 
 class WebsiteViewSet(viewsets.ModelViewSet):
     """Website library ViewSet."""
@@ -67,3 +68,10 @@ class KeywordViewSet(viewsets.ModelViewSet):
             serializer = KeywordSerializer
 
         return serializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = KeywordSerializer(data=request.data)    
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(status=status.HTTP_204_NO_CONTENT)
