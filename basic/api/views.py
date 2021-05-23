@@ -80,5 +80,5 @@ class KeywordViewSet(viewsets.ModelViewSet):
         keyword = Keyword.objects.get(name=request.data['name'])
         if keyword:
             keyword.delete()
-            return JsonResponse({'message': 'Keyword was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
-        return Response({'request': request.data})
+            return Response({'message': 'Keyword was deleted successfully!'})
+        return Response({'message': 'Delete Failed'})
