@@ -75,3 +75,10 @@ class KeywordViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def delete(self, request):
+        keyword = Keyword.objects.get(name=request.data['name'])
+        if keyword:
+            keyword.delete()
+            return JsonResponse({'message': 'Keyword was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'request': request.data})
