@@ -48,6 +48,20 @@ class WebsiteViewSet(viewsets.ModelViewSet):
         serializer = WebsiteSerializer(queryset, many=True)
 
         return Response(serializer.data)
+    
+    def post(self, request, *args, **kwargs):
+        serializer = WebsiteSerializer(data=request.data)    
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def delete(self, request):
+        keyword = Website.objects.get(name=request.data['name'])
+        if keyword:
+            keyword.delete()
+            return Response({'message': 'Website was deleted successfully!'})
+        return Response({'message': 'Delete Failed'})
 
 
 class KeywordViewSet(viewsets.ModelViewSet):
