@@ -7,7 +7,6 @@ from .models import Website, Keyword
 class WebsiteResource(resources.ModelResource):
     class Meta:
         model = Website
-        fields = ('name', 'url',)
 
 
 class WebsiteAdmin(ImportExportModelAdmin):
