@@ -65,7 +65,7 @@ class WebsiteViewSet(viewsets.ModelViewSet):
 
 
 class KeywordViewSet(viewsets.ModelViewSet):
-    """Website library ViewSet."""
+    """Keyword library ViewSet."""
 
     search_fields = ['name']
     queryset = Keyword.objects.all()
